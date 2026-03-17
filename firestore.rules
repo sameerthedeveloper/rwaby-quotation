@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user is signed in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Rules for 'customers' collection
+    match /customers/{customerId} {
+      // Only authenticated users can read, create, update, or delete customers
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for 'quotations' collection
+    match /quotations/{quotationId} {
+      // Only authenticated users can read, create, update, or delete quotations
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for 'jobCards' collection
+    match /jobCards/{jobId} {
+      // Only authenticated users can read, create, update, or delete job cards
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for 'workshopCosts' collection
+    match /workshopCosts/{costId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for 'workshopCostTemplates' collection
+    match /workshopCostTemplates/{templateId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Rules for 'settings' collection
+    match /settings/{settingId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}
