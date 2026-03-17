@@ -38,7 +38,7 @@ export default function Login() {
           <div className="w-12 h-12 bg-primary mx-auto rounded-lg flex items-center justify-center mb-4 text-white font-bold text-xl shadow-inner">
             C
           </div>
-          <CardTitle className="text-2xl font-bold">Crystal Integrated Services</CardTitle>
+          <CardTitle className="text-2xl font-bold">RWABY ALWLJH ALMTHDH LIMITED PARTNERSHIP</CardTitle>
           <div className="text-sm text-slate-500">Workshop Management System</div>
         </CardHeader>
         <CardContent>
