@@ -14,8 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function WorkshopCostCalculator() {
   const calc = useCostCalculator();
-  const { currentUser } = useAuth();
-  const isAdmin = currentUser?.email === 'admin@admin.com' || currentUser?.email === 'admin@rwaby.com';
+  const { isAdmin } = useAuth();
   const isNormalUser = !isAdmin;
   const [isSaving, setIsSaving] = useState(false);
   const [loadingTemplate, setLoadingTemplate] = useState(true);

@@ -33,10 +33,7 @@ export default function NewQuotation() {
   const [activeTemplateName, setActiveTemplateName] = useState('');
   const [noActiveTemplate, setNoActiveTemplate] = useState(false);
   const calc = useCostCalculator();
-  const { currentUser } = useAuth();
-  
-  // Assume basic admin check via email for now, or check claims if available
-  const isAdmin = currentUser?.email === 'admin@admin.com' || currentUser?.email === 'admin@rwaby.com';
+  const { isAdmin } = useAuth();
   const isNormalUser = !isAdmin;
 
   useEffect(() => {

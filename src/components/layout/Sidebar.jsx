@@ -13,7 +13,12 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.path === '/admin/settings') return isAdmin;
+    return true;
+  });
 
   const handleLogout = async () => {
     try {
@@ -38,7 +43,7 @@ export default function Sidebar() {
       
       <div className="flex-1 overflow-y-auto py-6 px-4">
         <nav className="space-y-1.5">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}

@@ -1,8 +1,16 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks';
 
-export default function PrivateRoute() {
-  const { currentUser } = useAuth();
+export default function PrivateRoute({ adminOnly = false }) {
+  const { currentUser, isAdmin } = useAuth();
 
-  return currentUser ? <Outlet /> : <Navigate to="/login" replace />;
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Outlet />;
 }

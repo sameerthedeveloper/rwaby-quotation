@@ -36,7 +36,11 @@ function App() {
               <Route path="job-cards" element={<JobCard />} />
               <Route path="job-cards/:id/edit" element={<EditJobCard />} />
               <Route path="workshop-cost" element={<WorkshopCostCalculator />} />
-              <Route path="admin/settings" element={<AdminSettings />} />
+              
+              {/* Admin Only Routes */}
+              <Route element={<PrivateRoute adminOnly={true} />}>
+                <Route path="admin/settings" element={<AdminSettings />} />
+              </Route>
             </Route>
           </Route>
         </Routes>
