@@ -21,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-lg border-t border-slate-200 shadow-[0_-4px_25px_-5px_rgba(0,0,0,0.05)] z-50 pb-safe">
-      <nav className="flex justify-around items-center h-16">
+      <nav className="flex justify-around items-center h-auto p-5">
         {filteredNavItems.map((item) => (
           <NavLink
             key={item.name}

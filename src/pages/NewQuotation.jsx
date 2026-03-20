@@ -129,13 +129,7 @@ export default function NewQuotation() {
         },
         // Workshop cost breakdown (only for workshop mode)
         ...(pricingMode === 'workshop' && {
-          WorkshopCost: {
-            workshopTotal: calc.workshopTotal,
-            margin: calc.margin,
-            finalPrice: calc.finalPrice,
-            profit: calc.profit,
-            costBreakdown: calc.itemTotals,
-          }
+          WorkshopCost: calc.getSnapshot()
         }),
         Payments: {
           advanceReceived: data.advanceReceived,

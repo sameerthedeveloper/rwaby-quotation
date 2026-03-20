@@ -4,19 +4,34 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/services/firebase";
+import { Calculator, AlertCircle } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { quotationSchema } from "@/utils/validators";
-import { calculateCuttingTotal, calculateBendingTotal, calculateGrandTotal, calculateBalanceAmount } from "@/utils/calculations";
+import { 
+  calculateCuttingTotal, 
+  calculateBendingTotal, 
+  calculateGrandTotal, 
+  calculateBalanceAmount 
+} from "@/utils/calculations";
+import { getActiveTemplateSettings, getWorkshopCostTemplate } from "@/services/firestoreService";
+import { useCostCalculator } from "@/hooks/useCostCalculator";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EditQuotation() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pricingMode, setPricingMode] = useState('manual');
+  const [activeTemplateName, setActiveTemplateName] = useState('');
+  const [noActiveTemplate, setNoActiveTemplate] = useState(false);
+  const calc = useCostCalculator();
+  const { isAdmin } = useAuth();
+  const isNormalUser = !isAdmin;
 
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
     resolver: zodResolver(quotationSchema),
@@ -31,6 +46,25 @@ export default function EditQuotation() {
   const advanceReceived = useWatch({ control, name: "advanceReceived" }) || 0;
 
   useEffect(() => {
+    const loadActiveTemplate = async () => {
+      try {
+        const activeId = await getActiveTemplateSettings();
+        if (activeId) {
+          const templateData = await getWorkshopCostTemplate(activeId);
+          if (templateData) {
+            // Only load basic costs from template, don't overwrite if we are loading saved data later
+            calc.loadData({ costs: templateData.costs });
+            setActiveTemplateName(templateData.name || '');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load active template:', e);
+      }
+    };
+    loadActiveTemplate();
+  }, []);
+
+  useEffect(() => {
     async function fetchQuotation() {
       try {
         const docRef = doc(db, "quotations", id);
@@ -38,6 +72,8 @@ export default function EditQuotation() {
         
         if (docSnap.exists()) {
           const data = docSnap.data();
+          
+          // Restore form fields
           reset({
             customerName: data.Customer?.customerName || "",
             phone: data.Customer?.phone || "",
@@ -51,6 +87,17 @@ export default function EditQuotation() {
             advanceReceived: data.Payments?.advanceReceived || 0,
             deliveryDate: data.Delivery?.deliveryDate || new Date().toISOString().split('T')[0]
           });
+
+          // Restore pricing mode
+          if (data.Totals?.pricingMode) {
+            setPricingMode(data.Totals.pricingMode);
+          }
+
+          // Restore workshop details
+          if (data.WorkshopCost) {
+            calc.loadData(data.WorkshopCost);
+          }
+
         } else {
           alert("Quotation not found");
           navigate("/quotations");
@@ -67,30 +114,52 @@ export default function EditQuotation() {
 
   const totalCutting = calculateCuttingTotal(numberOfCuts, ratePerCut);
   const totalBending = calculateBendingTotal(numberOfBends, ratePerBend);
-  const grandTotal = calculateGrandTotal(totalCutting, totalBending, otherCharges);
+  const manualGrandTotal = calculateGrandTotal(totalCutting, totalBending, otherCharges);
+  
+  const grandTotal = pricingMode === 'workshop' 
+    ? (calc.finalPrice + (Number(otherCharges) || 0)) 
+    : manualGrandTotal;
+    
   const balanceAmount = calculateBalanceAmount(grandTotal, advanceReceived);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
       const docRef = doc(db, "quotations", id);
-      await updateDoc(docRef, {
+      
+      const updateData = {
         "Customer.customerName": data.customerName,
         "Customer.phone": data.phone,
         "Material.materialType": data.materialType,
         "Material.thickness": data.thickness,
-        "Cutting.numberOfCuts": data.numberOfCuts,
-        "Cutting.ratePerCut": data.ratePerCut,
+        "Cutting.numberOfCuts": Number(data.numberOfCuts),
+        "Cutting.ratePerCut": Number(data.ratePerCut),
         "Cutting.totalCutting": totalCutting,
-        "Bending.numberOfBends": data.numberOfBends,
-        "Bending.ratePerBend": data.ratePerBend,
+        "Bending.numberOfBends": Number(data.numberOfBends),
+        "Bending.ratePerBend": Number(data.ratePerBend),
         "Bending.totalBending": totalBending,
-        "ExtraCharges.otherCharges": data.otherCharges,
+        "ExtraCharges.otherCharges": Number(data.otherCharges),
         "Totals.grandTotal": grandTotal,
-        "Payments.advanceReceived": data.advanceReceived,
+        "Totals.pricingMode": pricingMode,
+        "Payments.advanceReceived": Number(data.advanceReceived),
         "Payments.balanceAmount": balanceAmount,
         "Delivery.deliveryDate": data.deliveryDate,
-      });
+      };
+
+      // Handle WorkshopCost update
+      if (pricingMode === 'workshop') {
+        updateData.WorkshopCost = calc.getSnapshot();
+      } else {
+        // Optional: clear WorkshopCost if switched back to manual? 
+        // Better to keep it for history or maybe clear it to save space.
+        // For now let's keep it or clear it. Let's clear it to avoid confusion.
+        // updateData.WorkshopCost = null; 
+        // Wait, Firestore updateDoc uses dots for nested fields. 
+        // If I want to update the whole object I just use the key.
+      }
+
+      await updateDoc(docRef, updateData);
+      
       alert("Quotation updated successfully!");
       navigate('/quotations');
     } catch (error) {
@@ -111,9 +180,11 @@ export default function EditQuotation() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          
           <div className="md:col-span-2 space-y-6">
             
+            {/* Customer Details */}
             <Card>
               <CardHeader><CardTitle className="text-lg">Customer Information</CardTitle></CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
@@ -130,6 +201,7 @@ export default function EditQuotation() {
               </CardContent>
             </Card>
 
+            {/* Material Details */}
             <Card>
               <CardHeader><CardTitle className="text-lg">Material Details</CardTitle></CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
@@ -144,46 +216,163 @@ export default function EditQuotation() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Cutting & Bending Work</CardTitle></CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="font-medium text-sm mb-3">Cutting</h4>
-                  <div className="grid gap-4 md:grid-cols-3 items-end">
-                    <div className="space-y-2">
-                      <Label>Number of Cuts</Label>
-                      <Input type="number" min="0" {...register("numberOfCuts")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Rate per Cut (OMR)</Label>
-                      <Input type="number" min="0" {...register("ratePerCut")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Total Cutting</Label>
-                      <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">OMR {totalCutting.toFixed(2)}</div>
-                    </div>
-                  </div>
+            {/* Pricing Mode Toggle */}
+            <Card className="border-primary/30">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  Pricing Mode
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPricingMode('manual')}
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                      pricingMode === 'manual' 
+                        ? 'border-primary bg-primary/5 text-primary shadow-sm' 
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
+                    }`}
+                  >
+                    <span className="font-bold">Manual Pricing</span>
+                    <span className="text-[10px] uppercase tracking-wider opacity-70">Cut & Bend Rates</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPricingMode('workshop')}
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                      pricingMode === 'workshop' 
+                        ? 'border-primary bg-primary/5 text-primary shadow-sm' 
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
+                    }`}
+                  >
+                    <span className="font-bold">Workshop Cost</span>
+                    <span className="text-[10px] uppercase tracking-wider opacity-70">Production Based</span>
+                  </button>
                 </div>
-                <hr className="border-slate-200" />
-                <div>
-                  <h4 className="font-medium text-sm mb-3">Bending</h4>
-                  <div className="grid gap-4 md:grid-cols-3 items-end">
-                    <div className="space-y-2">
-                      <Label>Number of Bends</Label>
-                      <Input type="number" min="0" {...register("numberOfBends")} />
+
+                {pricingMode === 'workshop' && (
+                  <div className="bg-primary/5 rounded-lg p-4 border border-primary/10 overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-slate-900">Workshop Production Details</h4>
+                      <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase">
+                        Template: {activeTemplateName || 'Loading...'}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Rate per Bend (OMR)</Label>
-                      <Input type="number" min="0" {...register("ratePerBend")} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Total Bending</Label>
-                      <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">OMR {totalBending.toFixed(2)}</div>
-                    </div>
+                    
+                      <div className="space-y-3">
+                        {/* Hourly Items Loop */}
+                        <div className="grid grid-cols-1 gap-2">
+                          <h5 className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Hourly Costing</h5>
+                          {calc.hourlyRows.map(row => (
+                            <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
+                              <span className="text-xs font-medium text-slate-700 min-w-[90px] truncate">{row.label}</span>
+                              <div className="h-8 min-w-[5rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 text-xs">
+                                {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
+                              </div>
+                              <Input 
+                                type="number" 
+                                min="0" 
+                                className="h-8 text-xs w-16 px-2 text-center" 
+                                placeholder="Hrs" 
+                                value={row.hoursUsed || ''} 
+                                onChange={e => calc.updateHours(row.hoursField, e.target.value)} 
+                              />
+                              <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">
+                                {isNormalUser ? '***' : row.total.toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Fixed operations */}
+                        <h5 className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider pt-1">Fixed Operations</h5>
+                        <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                          {calc.fixedRows.map(row => (
+                            <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
+                              <span className="text-xs font-medium text-slate-700 flex-1 truncate">{row.label}</span>
+                              <span className="text-slate-400 text-[10px] uppercase font-semibold pr-2">
+                                {isNormalUser ? '***' : 'Fixed'}
+                              </span>
+                              <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">
+                                 {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Summary */}
+                        <div className="bg-slate-100 p-3 rounded-lg space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-500">Workshop Total:</span>
+                            <span className="font-mono font-medium">{isNormalUser ? '***' : `${calc.workshopTotal.toFixed(2)} OMR`}</span>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <Label className="text-xs">Margin (%)</Label>
+                            <div className="h-8 min-w-[4rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 font-mono text-xs">
+                              {isNormalUser ? '***' : (calc.margin || 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between text-sm text-green-700">
+                            <span>Profit:</span>
+                            <span className="font-mono font-semibold">{isNormalUser ? '***' : `${calc.profit.toFixed(2)} OMR`}</span>
+                          </div>
+
+                          <div className="flex justify-between text-base font-bold text-primary pt-1">
+                            <span>Final Price:</span>
+                            <span className="font-mono">{calc.finalPrice.toFixed(2)} OMR</span>
+                          </div>
+                        </div>
+                      </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
+
+            {pricingMode === 'manual' && (
+              <Card>
+                <CardHeader><CardTitle className="text-lg">Cutting & Bending Work</CardTitle></CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-medium text-sm mb-3">Cutting</h4>
+                    <div className="grid gap-4 md:grid-cols-3 items-end">
+                      <div className="space-y-2">
+                        <Label>Number of Cuts</Label>
+                        <Input type="number" min="0" {...register("numberOfCuts")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Rate per Cut (OMR)</Label>
+                        <Input type="number" min="0" {...register("ratePerCut")} />
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <Label className="text-right block">Total Cutting</Label>
+                        <div className="h-9 px-3 py-1 flex items-center justify-end border rounded-md bg-slate-50 text-slate-700 font-mono font-bold">OMR {totalCutting.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <hr className="border-slate-200" />
+                  <div>
+                    <h4 className="font-medium text-sm mb-3">Bending</h4>
+                    <div className="grid gap-4 md:grid-cols-3 items-end">
+                      <div className="space-y-2">
+                        <Label>Number of Bends</Label>
+                        <Input type="number" min="0" {...register("numberOfBends")} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Rate per Bend (OMR)</Label>
+                        <Input type="number" min="0" {...register("ratePerBend")} />
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <Label className="text-right block">Total Bending</Label>
+                        <div className="h-9 px-3 py-1 flex items-center justify-end border rounded-md bg-slate-50 text-slate-700 font-mono font-bold">OMR {totalBending.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader><CardTitle className="text-lg">Additional Details</CardTitle></CardHeader>
@@ -205,19 +394,45 @@ export default function EditQuotation() {
               <Card className="border-primary/20 shadow-md">
                 <CardHeader className="bg-primary/5 border-b pb-4"><CardTitle className="text-lg">Quotation Summary</CardTitle></CardHeader>
                 <CardContent className="pt-6 space-y-4">
-                  <div className="flex justify-between text-sm"><span className="text-slate-500">Total Cutting:</span><span className="font-medium">OMR {totalCutting.toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-500">Total Bending:</span><span className="font-medium">OMR {totalBending.toFixed(2)}</span></div>
-                  <div className="flex justify-between text-sm"><span className="text-slate-500">Other Charges:</span><span className="font-medium">OMR {Number(otherCharges).toFixed(2)}</span></div>
+                  
+                  {pricingMode === 'manual' ? (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Total Cutting:</span>
+                        <span className="font-medium">OMR {totalCutting.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Total Bending:</span>
+                        <span className="font-medium">OMR {totalBending.toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Workshop Cost:</span>
+                        <span className="font-medium">{isNormalUser ? '***' : `OMR ${calc.workshopTotal.toFixed(2)}`}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-green-700">
+                        <span className="text-slate-500">Profit ({isNormalUser ? '***' : calc.margin}%):</span>
+                        <span className="font-medium">{isNormalUser ? '***' : `OMR ${calc.profit.toFixed(2)}`}</span>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Other Charges:</span>
+                    <span className="font-medium">OMR {Number(otherCharges).toFixed(2)}</span>
+                  </div>
                   <hr className="border-slate-200" />
                   <div className="flex justify-between text-base font-bold text-slate-900">
-                    <span>Grand Total:</span><span className="text-primary">OMR {grandTotal.toFixed(2)}</span>
+                    <span>Grand Total:</span><span className="text-primary font-mono">OMR {grandTotal.toFixed(2)}</span>
                   </div>
                   <div className="space-y-2 pt-4">
                     <Label>Advance Received (OMR)</Label>
                     <Input type="number" min="0" className="border-green-300" {...register("advanceReceived")} />
                   </div>
                   <div className="flex justify-between text-base font-bold bg-red-50 p-3 rounded-md text-red-700 mt-2">
-                    <span>Balance Due:</span><span>OMR {balanceAmount.toFixed(2)}</span>
+                    <span>Balance Due:</span><span className="font-mono">OMR {balanceAmount.toFixed(2)}</span>
                   </div>
                   <Button type="submit" className="w-full mt-6 flex justify-center py-2.5" disabled={isSubmitting}>
                     {isSubmitting ? "Saving Updates..." : "Save Changes"}
