@@ -13,9 +13,11 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
           <span className="font-medium text-slate-900 text-sm">{row.label}</span>
           <span className="text-xs text-slate-400 ml-2">Fixed</span>
         </td>
-        {!hidePrices && (
-          <td className="px-4 sm:px-6 py-3 text-right">
-            {readOnlyAmount ? (
+        <td className="px-4 sm:px-6 py-3 text-right">
+          {hidePrices ? (
+            <span className="font-mono text-sm text-slate-400">***</span>
+          ) : (
+            readOnlyAmount ? (
                <span className="font-mono text-sm text-slate-800">{(row.amount || 0).toFixed(2)}</span>
             ) : (
               <Input
@@ -25,13 +27,13 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
                 value={row.amount || ''}
                 onChange={e => onAmountChange(row.field, e.target.value)}
               />
-            )}
-          </td>
-        )}
-        {!hidePrices && <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>}
+            )
+          )}
+        </td>
+        <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
         <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
         <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm font-semibold text-slate-900">
-          {(row.amount || 0).toFixed(2)}
+          {hidePrices ? '***' : (row.amount || 0).toFixed(2)}
         </td>
       </tr>
     );
@@ -42,9 +44,11 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
       <td className="px-4 sm:px-6 py-3">
         <span className="font-medium text-slate-900 text-sm">{row.label}</span>
       </td>
-      {!hidePrices && (
-        <td className="px-4 sm:px-6 py-3 text-right">
-          {readOnlyAmount ? (
+      <td className="px-4 sm:px-6 py-3 text-right">
+        {hidePrices ? (
+          <span className="font-mono text-sm text-slate-400">***</span>
+        ) : (
+          readOnlyAmount ? (
              <span className="font-mono text-sm text-slate-800">{(row.amount || 0).toFixed(2)}</span>
           ) : (
             <Input
@@ -54,14 +58,12 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
               value={row.amount || ''}
               onChange={e => onAmountChange(row.costField, e.target.value)}
             />
-          )}
-        </td>
-      )}
-      {!hidePrices && (
-        <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm text-slate-600">
-          {row.hourly.toFixed(2)}
-        </td>
-      )}
+          )
+        )}
+      </td>
+      <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm text-slate-600">
+        {hidePrices ? '***' : row.hourly.toFixed(2)}
+      </td>
       <td className="px-4 sm:px-6 py-3 text-right">
         <Input
           type="number"
@@ -72,7 +74,7 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
         />
       </td>
       <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm font-semibold text-slate-900">
-        {row.total.toFixed(2)}
+        {hidePrices ? '***' : row.total.toFixed(2)}
       </td>
     </tr>
   );
