@@ -57,7 +57,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
                 <tr className="bg-slate-50 border-t-2 border-slate-300">
                   <td colSpan={4} className="px-6 py-4 font-bold text-slate-900">Workshop Total</td>
                   <td className="px-6 py-4 text-right font-bold font-mono text-primary text-lg">
-                    {workshopTotal.toFixed(2)}
+                    {hidePrices ? '***' : workshopTotal.toFixed(2)}
                   </td>
                 </tr>
               </tfoot>
@@ -109,7 +109,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
         {/* Total */}
         <div className="bg-slate-100 rounded-lg p-4 flex justify-between items-center">
           <span className="font-bold text-slate-900">Workshop Total</span>
-          <span className="font-bold font-mono text-primary text-lg">{`${workshopTotal.toFixed(2)} OMR`}</span>
+          <span className="font-bold font-mono text-primary text-lg">{hidePrices ? '***' : `${workshopTotal.toFixed(2)} OMR`}</span>
         </div>
       </div>
     </>
@@ -129,7 +129,7 @@ function MobileRow({ label, amount, hourly, hoursUsed, total, onAmountChange, on
           <Label className="text-[11px] text-slate-500">Amount (OMR)</Label>
           {readOnlyAmount ? (
             <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50/50 text-slate-800 font-mono text-sm">
-              {(amount || 0).toFixed(2)}
+              {hidePrices ? '***' : (amount || 0).toFixed(2)}
             </div>
           ) : (
             <Input type="number" min="0" value={amount || ''} onChange={e => onAmountChange(e.target.value)} />
@@ -141,8 +141,8 @@ function MobileRow({ label, amount, hourly, hoursUsed, total, onAmountChange, on
         </div>
       </div>
       <div className="flex justify-between text-xs mt-2">
-        <span className="text-slate-500">Hourly: <strong className="text-slate-700">{hourly.toFixed(2)}</strong></span>
-        <span className="text-slate-500">Total: <strong className="text-primary">{`${total.toFixed(2)} OMR`}</strong></span>
+        <span className="text-slate-500">Hourly: <strong className="text-slate-700">{hidePrices ? '***' : hourly.toFixed(2)}</strong></span>
+        <span className="text-slate-500">Total: <strong className="text-primary">{hidePrices ? '***' : `${total.toFixed(2)} OMR`}</strong></span>
       </div>
     </div>
   );
@@ -153,7 +153,7 @@ function MobileFixedRow({ label, amount, onAmountChange, readOnlyAmount, hidePri
     <div className="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
       <span className="text-sm font-medium text-slate-700 flex-1">{label}</span>
       {readOnlyAmount ? (
-        <span className="font-mono text-sm text-slate-800">{(amount || 0).toFixed(2)}</span>
+        <span className="font-mono text-sm text-slate-800">{hidePrices ? '***' : (amount || 0).toFixed(2)}</span>
       ) : (
         <Input type="number" min="0" className="w-28" value={amount || ''} onChange={e => onAmountChange(e.target.value)} />
       )}

@@ -269,7 +269,7 @@ export default function EditQuotation() {
                             <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
                               <span className="text-xs font-medium text-slate-700 min-w-[90px] truncate">{row.label}</span>
                               <div className="h-8 min-w-[5rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 text-xs">
-                                {(row.amount || 0).toFixed(2)}
+                                {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
                               </div>
                               <Input 
                                 type="number" 
@@ -280,7 +280,7 @@ export default function EditQuotation() {
                                 onChange={e => calc.updateHours(row.hoursField, e.target.value)} 
                               />
                               <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">
-                                {row.total.toFixed(2)}
+                                {isNormalUser ? '***' : row.total.toFixed(2)}
                               </span>
                             </div>
                           ))}
@@ -293,10 +293,10 @@ export default function EditQuotation() {
                             <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
                               <span className="text-xs font-medium text-slate-700 flex-1 truncate">{row.label}</span>
                               <span className="text-slate-400 text-[10px] uppercase font-semibold pr-2">
-                                Fixed
+                                {isNormalUser ? '***' : 'Fixed'}
                               </span>
                               <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">
-                                 {(row.amount || 0).toFixed(2)}
+                                 {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
                               </span>
                             </div>
                           ))}
@@ -306,18 +306,18 @@ export default function EditQuotation() {
                         <div className="bg-slate-100 p-3 rounded-lg space-y-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-slate-500">Workshop Total:</span>
-                            <span className="font-mono font-medium">{`${calc.workshopTotal.toFixed(2)} OMR`}</span>
+                            <span className="font-mono font-medium">{isNormalUser ? '***' : `${calc.workshopTotal.toFixed(2)} OMR`}</span>
                           </div>
                           
                           <div className="space-y-1">
                             <Label className="text-xs">Margin (%)</Label>
                             <div className="h-8 min-w-[4rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 font-mono text-xs">
-                              {calc.margin || 0}
+                              {isNormalUser ? '***' : (calc.margin || 0)}
                             </div>
                           </div>
                           <div className="flex justify-between text-sm text-green-700">
                             <span>Profit:</span>
-                            <span className="font-mono font-semibold">{`${calc.profit.toFixed(2)} OMR`}</span>
+                            <span className="font-mono font-semibold">{isNormalUser ? '***' : `${calc.profit.toFixed(2)} OMR`}</span>
                           </div>
 
                           <div className="flex justify-between text-base font-bold text-primary pt-1">
@@ -410,11 +410,11 @@ export default function EditQuotation() {
                     <>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Workshop Cost:</span>
-                        <span className="font-medium">OMR {calc.workshopTotal.toFixed(2)}</span>
+                        <span className="font-medium">{isNormalUser ? '***' : `OMR ${calc.workshopTotal.toFixed(2)}`}</span>
                       </div>
                       <div className="flex justify-between text-sm text-green-700">
-                        <span className="text-slate-500">Profit ({calc.margin}%):</span>
-                        <span className="font-medium">OMR {calc.profit.toFixed(2)}</span>
+                        <span className="text-slate-500">Profit ({isNormalUser ? '***' : calc.margin}%):</span>
+                        <span className="font-medium">{isNormalUser ? '***' : `OMR ${calc.profit.toFixed(2)}`}</span>
                       </div>
                     </>
                   )}
