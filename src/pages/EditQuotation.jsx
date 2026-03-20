@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import CostTable from "@/components/cost/CostTable";
+import CostSummary from "@/components/cost/CostSummary";
 import { quotationSchema } from "@/utils/validators";
 import { 
   calculateCuttingTotal, 
