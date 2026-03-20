@@ -29,7 +29,7 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
         <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
         <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
         <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm font-semibold text-slate-900">
-          {hidePrices ? '***' : (row.amount || 0).toFixed(2)}
+          {(row.amount || 0).toFixed(2)}
         </td>
       </tr>
     );
@@ -66,7 +66,7 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
         />
       </td>
       <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm font-semibold text-slate-900">
-        {hidePrices ? '***' : row.total.toFixed(2)}
+        {row.total.toFixed(2)}
       </td>
     </tr>
   );

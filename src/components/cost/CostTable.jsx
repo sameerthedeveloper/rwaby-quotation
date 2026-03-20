@@ -57,7 +57,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
                 <tr className="bg-slate-50 border-t-2 border-slate-300">
                   <td colSpan={4} className="px-6 py-4 font-bold text-slate-900">Workshop Total</td>
                   <td className="px-6 py-4 text-right font-bold font-mono text-primary text-lg">
-                    {hidePrices ? '***' : workshopTotal.toFixed(2)}
+                    {workshopTotal.toFixed(2)}
                   </td>
                 </tr>
               </tfoot>
@@ -109,7 +109,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
         {/* Total */}
         <div className="bg-slate-100 rounded-lg p-4 flex justify-between items-center">
           <span className="font-bold text-slate-900">Workshop Total</span>
-          <span className="font-bold font-mono text-primary text-lg">{hidePrices ? '***' : `${workshopTotal.toFixed(2)} OMR`}</span>
+          <span className="font-bold font-mono text-primary text-lg">{`${workshopTotal.toFixed(2)} OMR`}</span>
         </div>
       </div>
     </>
@@ -142,7 +142,7 @@ function MobileRow({ label, amount, hourly, hoursUsed, total, onAmountChange, on
       </div>
       <div className="flex justify-between text-xs mt-2">
         <span className="text-slate-500">Hourly: <strong className="text-slate-700">{hidePrices ? '***' : hourly.toFixed(2)}</strong></span>
-        <span className="text-slate-500">Total: <strong className="text-primary">{hidePrices ? '***' : `${total.toFixed(2)} OMR`}</strong></span>
+        <span className="text-slate-500">Total: <strong className="text-primary">{`${total.toFixed(2)} OMR`}</strong></span>
       </div>
     </div>
   );
