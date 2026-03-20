@@ -7,9 +7,9 @@ export default function Header() {
         {/* Mobile Header Title (Hidden on desktop as sidebar handles it) */}
         <div className="md:hidden flex items-center gap-2 text-primary font-bold text-lg tracking-wider">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-sm text-white font-bold text-lg">
-            C
+            R
           </div>
-          CRYSTAL
+          RWABY
         </div>
         
         {/* Desktop Header Title placeholder if needed */}
