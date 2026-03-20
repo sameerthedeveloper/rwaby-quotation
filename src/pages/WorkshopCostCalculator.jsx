@@ -108,7 +108,7 @@ export default function WorkshopCostCalculator() {
             <strong>Hourly cost formulas:</strong>{' '}
             Machine = Amount ÷ 365 ÷ 8 &nbsp;|&nbsp; Labor = Amount ÷ 8 &nbsp;|&nbsp; Others = Amount ÷ 26 ÷ 8
           </p>
-          {!isNormalUser && (
+          {isNormalUser && (
             <p className="text-xs text-slate-400 mt-2 italic">
               Note: Base costs are locked by the administrator. Only input the <strong>Hours Used</strong>.
             </p>
@@ -124,7 +124,7 @@ export default function WorkshopCostCalculator() {
         onHoursChange={calc.updateHours}
         onFixedChange={calc.updateFixed}
         workshopTotal={calc.workshopTotal}
-        readOnlyAmount={true}
+        readOnlyAmount={isNormalUser}
         hidePrices={isNormalUser}
       />
 
@@ -135,6 +135,7 @@ export default function WorkshopCostCalculator() {
         finalPrice={calc.finalPrice}
         profit={calc.profit}
         onMarginChange={calc.setMargin}
+        readOnly={isNormalUser}
         hidePrices={isNormalUser}
       />
     </div>

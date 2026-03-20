@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/ui/Input';
 
 /**
  * Summary card showing workshop total, margin input, final price and profit.
  */
-export default function CostSummary({ workshopTotal, margin, finalPrice, profit, hidePrices = false }) {
+export default function CostSummary({ workshopTotal, margin, finalPrice, profit, onMarginChange, readOnly = false, hidePrices = false }) {
   return (
     <Card className="border-primary/20 shadow-md">
       <CardHeader className="bg-primary/5 border-b pb-4">
@@ -18,9 +19,18 @@ export default function CostSummary({ workshopTotal, margin, finalPrice, profit,
 
         <div className="space-y-2">
           <Label>Margin (%)</Label>
-          <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 border-slate-200 text-slate-500 font-mono text-sm max-w-[100px]">
-            {(margin || 0)}
-          </div>
+          {readOnly ? (
+            <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 border-slate-200 text-slate-500 font-mono text-sm max-w-[100px]">
+              {(margin || 0)}
+            </div>
+          ) : (
+            <Input
+              type="number"
+              className="w-24 font-mono"
+              value={margin || ''}
+              onChange={e => onMarginChange(e.target.value)}
+            />
+          )}
         </div>
 
         <hr className="border-slate-200" />

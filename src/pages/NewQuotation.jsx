@@ -281,66 +281,33 @@ export default function NewQuotation() {
                            <span className="text-sm font-bold text-primary px-2 py-1 bg-blue-100 rounded-md">{activeTemplateName}</span>
                         </div>
 
-                        {!isNormalUser && (
+                        {isNormalUser && (
                           <p className="text-[11px] text-slate-500 italic pb-2">
                             Base costs are locked by the administrator. Only input the <strong>Hours Used</strong>.
                           </p>
                         )}
 
-                        {/* Hourly cost items - Read Only Base Costs */}
-                        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                          {calc.hourlyRows.map(row => (
-                            <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
-                              <span className="text-xs font-medium text-slate-700 min-w-[90px] truncate">{row.label}</span>
-                              <div className="h-8 min-w-[5rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 text-xs">
-                                {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
-                              </div>
-                              <Input type="number" min="0" className="h-8 text-xs w-16 px-2 text-center" placeholder="Hrs" value={row.hoursUsed || ''} onChange={e => calc.updateHours(row.hoursField, e.target.value)} />
-                              <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">{row.total.toFixed(2)}</span>
-                            </div>
-                          ))}
-                        </div>
+                        <CostTable 
+                          hourlyRows={calc.hourlyRows} 
+                          fixedRows={calc.fixedRows} 
+                          onCostChange={calc.updateCost} 
+                          onHoursChange={calc.updateHours} 
+                          onFixedChange={calc.updateFixed} 
+                          workshopTotal={calc.workshopTotal}
+                          readOnlyAmount={isNormalUser}
+                          hidePrices={isNormalUser}
+                        />
 
-                    {/* Fixed operations */}
-                    <h5 className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider pt-1">Fixed Operations</h5>
-                    <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                      {calc.fixedRows.map(row => (
-                        <div key={row.key} className="flex items-center gap-2 bg-slate-50 rounded-md p-2">
-                          <span className="text-xs font-medium text-slate-700 flex-1 truncate">{row.label}</span>
-                          <span className="text-slate-400 text-[10px] uppercase font-semibold pr-2">
-                            Fixed
-                          </span>
-                          <span className="text-xs font-mono text-primary font-semibold min-w-[50px] text-right ml-auto">
-                             {isNormalUser ? '***' : (row.amount || 0).toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Summary */}
-                    <div className="bg-slate-100 p-3 rounded-lg space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Workshop Total:</span>
-                        <span className="font-mono font-medium">{`${calc.workshopTotal.toFixed(2)} OMR`}</span>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <Label className="text-xs">Margin (%)</Label>
-                        <div className="h-8 min-w-[4rem] px-2 flex items-center border rounded-md bg-white border-slate-200 text-slate-500 font-mono text-xs">
-                          {(calc.margin || 0)}
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-sm text-green-700">
-                        <span>Profit:</span>
-                        <span className="font-mono font-semibold">{`${calc.profit.toFixed(2)} OMR`}</span>
-                      </div>
-
-                      <div className="flex justify-between text-base font-bold text-primary pt-1">
-                        <span>Final Price:</span>
-                        <span className="font-mono">{calc.finalPrice.toFixed(2)} OMR</span>
-                      </div>
-                    </div>
-                  </>
+                        <CostSummary 
+                          workshopTotal={calc.workshopTotal}
+                          margin={calc.margin}
+                          finalPrice={calc.finalPrice}
+                          profit={calc.profit}
+                          onMarginChange={calc.setMargin}
+                          readOnly={isNormalUser}
+                          hidePrices={isNormalUser}
+                        />
+                      </>
                 )}
               </div>
             )}
