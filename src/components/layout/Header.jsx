@@ -2,7 +2,7 @@ import { Bell, User } from 'lucide-react';
 
 export default function Header() {
   return (
-    <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm z-10 sticky top-0 md:relative">
+    <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm z-10 sticky top-0 md:relative pt-safe">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         {/* Mobile Header Title (Hidden on desktop as sidebar handles it) */}
         <div className="md:hidden flex items-center gap-2 text-primary font-bold text-lg tracking-wider">

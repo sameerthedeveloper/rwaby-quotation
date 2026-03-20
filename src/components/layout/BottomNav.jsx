@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, FileText, PlusSquare, ClipboardList, Calculator, Settings } from 'lucide-react';
+import { useAuth } from '@/hooks';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -11,10 +12,17 @@ const navItems = [
 ];
 
 export default function BottomNav() {
+  const { isAdmin } = useAuth();
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.path === '/admin/settings') return isAdmin;
+    return true;
+  });
+
   return (
     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-lg border-t border-slate-200 shadow-[0_-4px_25px_-5px_rgba(0,0,0,0.05)] z-50 pb-safe">
       <nav className="flex justify-around items-center h-16">
-        {navItems.map((item) => (
+        {filteredNavItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
