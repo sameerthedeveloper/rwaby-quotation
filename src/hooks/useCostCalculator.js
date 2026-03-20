@@ -67,10 +67,10 @@ export function useCostCalculator(initial = {}) {
 
   // ─── Table rows for the UI ────────────────────────────────────
   const hourlyRows = useMemo(() => [
-    { key: 'machine',     label: 'Machine (Monthly)',          amount: costs.machineCost,       hourly: hourlyRates.machineHourly,     hoursUsed: hours.machineHours,     total: itemTotals.machineTotal,     costField: 'machineCost',    hoursField: 'machineHours' },
-    { key: 'rent',        label: 'Workshop Rent (Monthly)',    amount: costs.rent,              hourly: hourlyRates.rentHourly,        hoursUsed: hours.rentHours,        total: itemTotals.rentTotal,        costField: 'rent',           hoursField: 'rentHours' },
+    { key: 'machine',     label: 'Machine (Per Hour)',          amount: costs.machineCost,       hourly: hourlyRates.machineHourly,     hoursUsed: hours.machineHours,     total: itemTotals.machineTotal,     costField: 'machineCost',    hoursField: 'machineHours' },
+    { key: 'rent',        label: 'Workshop Rent (Per Hour)',    amount: costs.rent,              hourly: hourlyRates.rentHourly,        hoursUsed: hours.rentHours,        total: itemTotals.rentTotal,        costField: 'rent',           hoursField: 'rentHours' },
     { key: 'labor',       label: 'Labor Cost (Per Day)',       amount: costs.laborCostPerDay,   hourly: hourlyRates.laborHourly,       hoursUsed: hours.laborHours,       total: itemTotals.laborTotal,       costField: 'laborCostPerDay',hoursField: 'laborHours' },
-    { key: 'electricity', label: 'Electricity (EB) (Monthly)', amount: costs.electricityCost,   hourly: hourlyRates.electricityHourly, hoursUsed: hours.electricityHours, total: itemTotals.electricityTotal, costField: 'electricityCost',hoursField: 'electricityHours' },
+    { key: 'electricity', label: 'Electricity (EB) (Per Hour)', amount: costs.electricityCost,   hourly: hourlyRates.electricityHourly, hoursUsed: hours.electricityHours, total: itemTotals.electricityTotal, costField: 'electricityCost',hoursField: 'electricityHours' },
   ], [costs, hourlyRates, hours, itemTotals]);
 
   const fixedRows = useMemo(() => [
