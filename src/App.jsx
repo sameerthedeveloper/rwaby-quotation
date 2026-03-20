@@ -16,6 +16,7 @@ import AdminSettings from '@/pages/AdminSettings';
 
 import { AuthProvider } from '@/context/AuthContext';
 import PrivateRoute from '@/components/layout/PrivateRoute';
+import PublicRoute from '@/components/layout/PublicRoute';
 
 function App() {
   return (
@@ -23,7 +24,9 @@ function App() {
       <Router>
         <Routes>
           {/* Public Route */}
-          <Route path="/login" element={<Login />} />
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+          </Route>
 
           {/* Protected Routes */}
           <Route element={<PrivateRoute />}>
