@@ -137,73 +137,74 @@ export default function Quotations() {
           <div className="p-8 text-center text-slate-500">No quotations found.</div>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            {/* Unified Responsive Table View */}
+            <div className="table-container no-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                    <th className="px-6 py-4 font-medium text-sm">Quotation ID</th>
-                    <th className="px-6 py-4 font-medium text-sm">Customer</th>
-                    <th className="px-6 py-4 font-medium text-sm">Material</th>
-                    <th className="px-6 py-4 font-medium text-sm">Amount</th>
-                    <th className="px-6 py-4 font-medium text-sm">Date</th>
-                    <th className="px-6 py-4 font-medium text-sm">Status</th>
-                    <th className="px-6 py-4 font-medium text-sm text-right">Actions</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Quotation ID</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Customer</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Material</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Amount</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Date</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm">Status</th>
+                    <th className="px-4 md:px-6 py-4 font-medium text-sm text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-200 uppercase">
                   {filteredQuotations.map((quotation) => (
                     <tr key={quotation.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-mono text-slate-500">
-                        {quotation.id.slice(0, 8)}...
+                      <td className="px-4 md:px-6 py-4 text-xs font-mono text-slate-400">
+                        {quotation.id.slice(0, 8)}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-slate-900">
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="font-bold text-slate-900 text-sm md:text-base">
                           {quotation.Customer?.customerName || 'Unknown'}
                         </div>
-                        <div className="text-sm text-slate-500">
+                        <div className="text-xs text-slate-500 font-medium tracking-tight">
                           {quotation.Customer?.phone}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          {quotation.Material?.materialType} <span className="text-slate-400">({quotation.Material?.thickness})</span>
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="text-xs md:text-sm font-medium">
+                          {quotation.Material?.materialType} <span className="text-slate-400 font-normal">({quotation.Material?.thickness})</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-primary">OMR {quotation.Totals?.grandTotal}</div>
-                        <div className="text-slate-500 text-xs">Bal: OMR {quotation.Payments?.balanceAmount}</div>
+                      <td className="px-4 md:px-6 py-4">
+                        <div className="font-bold text-primary text-sm">OMR {quotation.Totals?.grandTotal}</div>
+                        <div className="text-slate-400 text-[10px] font-medium">BAL: OMR {quotation.Payments?.balanceAmount}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-4 md:px-6 py-4 text-xs text-slate-500 whitespace-nowrap">
                         {quotation.createdAt ? format(quotation.createdAt.toDate ? quotation.createdAt.toDate() : new Date(quotation.createdAt), 'MMM dd, yyyy') : 'N/A'}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          quotation.Status?.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                          quotation.Status?.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                          'bg-green-100 text-green-800'
+                      <td className="px-4 md:px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider ${
+                          quotation.Status?.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          quotation.Status?.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                          'bg-green-100 text-green-700'
                         }`}>
-                          {(quotation.Status?.status || 'Unknown').replace('_', ' ').toUpperCase()}
+                          {(quotation.Status?.status || 'Unknown').replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2 text-slate-500">
+                      <td className="px-4 md:px-6 py-4 text-right">
+                        <div className="flex justify-end gap-1 md:gap-2">
                           {quotation.Status?.status === 'pending' && (
                             <Button 
                               variant="outline" 
                               size="sm"
-                              className="text-primary hover:text-primary-foreground"
+                              className="h-8 w-8 p-0 md:w-auto md:px-3 text-primary border-primary/20 hover:bg-primary/5"
                               onClick={() => handleConvertToJobCard(quotation)}
                               title="Convert to Job Card"
                             >
                               <ArrowRight className="h-4 w-4" />
+                              <span className="hidden md:inline ml-1">Job</span>
                             </Button>
                           )}
                           <Button 
                             variant="ghost" 
                             size="icon"
                             title="Download PDF"
-                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
                             onClick={() => generateQuotationPDF(quotation)}
                           >
                             <Download className="h-4 w-4" />
@@ -211,6 +212,7 @@ export default function Quotations() {
                           <Button 
                             variant="ghost" 
                             size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-slate-600"
                             title="Edit Quotation"
                             onClick={() => navigate(`/quotations/${quotation.id}/edit`)}
                           >
@@ -219,7 +221,7 @@ export default function Quotations() {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
                             title="Delete Quotation"
                             onClick={() => handleDeleteQuotation(quotation.id, quotation.Customer?.customerName)}
                           >
@@ -231,60 +233,6 @@ export default function Quotations() {
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="md:hidden divide-y divide-slate-100">
-              {filteredQuotations.map((quotation) => (
-                <div key={quotation.id} className="p-4 space-y-3 bg-white">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-slate-900">{quotation.Customer?.customerName || 'Unknown'}</h3>
-                      <p className="text-xs text-slate-500">{quotation.Customer?.phone}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold ${
-                      quotation.Status?.status === 'pending' ? 'bg-amber-100 text-amber-800' :
-                      quotation.Status?.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {(quotation.Status?.status || 'Unknown').replace('_', ' ').toUpperCase()}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <div>
-                      <p className="text-slate-500 text-xs">Material</p>
-                      <p className="font-medium">{quotation.Material?.materialType} <span className="text-slate-400 font-normal">({quotation.Material?.thickness})</span></p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">OMR {quotation.Totals?.grandTotal}</p>
-                      <p className="text-[10px] text-slate-500">Bal: OMR {quotation.Payments?.balanceAmount}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-50 mt-2">
-                    <p className="text-[10px] text-slate-400 font-mono">
-                      {quotation.id.slice(0, 8)} • {quotation.createdAt ? format(quotation.createdAt.toDate ? quotation.createdAt.toDate() : new Date(quotation.createdAt), 'MMM dd') : ''}
-                    </p>
-                    <div className="flex gap-1">
-                      {quotation.Status?.status === 'pending' && (
-                        <Button variant="outline" size="sm" className="h-8 px-2 text-primary" onClick={() => handleConvertToJobCard(quotation)}>
-                          <ArrowRight className="h-3 w-3 mr-1" /> Job
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => generateQuotationPDF(quotation)}>
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500" onClick={() => navigate(`/quotations/${quotation.id}/edit`)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDeleteQuotation(quotation.id, quotation.Customer?.customerName)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </>
         )}
