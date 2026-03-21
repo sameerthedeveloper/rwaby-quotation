@@ -16,7 +16,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
                   <th className="px-6 py-4 font-medium">Item</th>
-                   <th className="px-6 py-4 font-medium text-right">Amount (OMR)</th>
+                   <th className="px-6 py-4 font-medium text-right">Labour Count</th>
                   <th className="px-6 py-4 font-medium text-right">1 Hour Cost</th>
                   <th className="px-6 py-4 font-medium text-right">Hours Used</th>
                   <th className="px-6 py-4 font-medium text-right">Total Cost (OMR)</th>

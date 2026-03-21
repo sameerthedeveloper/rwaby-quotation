@@ -10,6 +10,7 @@ const INITIAL_COSTS = {
   machineCost: 0,
   rent: 0,
   laborCostPerDay: 51.92,
+  fabricatorCostPerHour: 1.3221,
   electricityCost: 0,
 };
 
@@ -69,7 +70,8 @@ export function useCostCalculator(initial = {}) {
   const hourlyRows = useMemo(() => [
     { key: 'machine',     label: 'Machine (Per Hour)',          amount: costs.machineCost,       hourly: hourlyRates.machineHourly,     hoursUsed: hours.machineHours,     total: itemTotals.machineTotal,     costField: 'machineCost',    hoursField: 'machineHours' },
     { key: 'rent',        label: 'Workshop Rent (Per Hour)',    amount: costs.rent,              hourly: hourlyRates.rentHourly,        hoursUsed: hours.rentHours,        total: itemTotals.rentTotal,        costField: 'rent',           hoursField: 'rentHours' },
-    { key: 'labor',       label: 'Labor Cost (Per Day)',       amount: costs.laborCostPerDay,   hourly: hourlyRates.laborHourly,       hoursUsed: hours.laborHours,       total: itemTotals.laborTotal,       costField: 'laborCostPerDay',hoursField: 'laborHours' },
+    { key: 'fabricator',       label: 'Fabricator Cost (Per Hour)',       amount: costs.laborCostPerDay,   hourly: hourlyRates.laborHourly,       hoursUsed: hours.laborHours,       total: itemTotals.laborTotal,       costField: 'laborCostPerDay',hoursField: 'laborHours' },
+    { key: 'labor',       label: 'Labor Cost (Per Head)',       amount: costs.fabricatorCostPerDay,   hourly: costs.fabricatorCostPerDay/8,       hoursUsed: hours.fabricatorHours,       total: itemTotals.fabricatorTotal,       costField: 'fabricatorCostPerDay',hoursField: 'fabricatorHours' },
     { key: 'electricity', label: 'Electricity (EB) (Per Hour)', amount: costs.electricityCost,   hourly: hourlyRates.electricityHourly, hoursUsed: hours.electricityHours, total: itemTotals.electricityTotal, costField: 'electricityCost',hoursField: 'electricityHours' },
   ], [costs, hourlyRates, hours, itemTotals]);
 

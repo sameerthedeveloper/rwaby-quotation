@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/Input';
+import { Select } from '../ui/Select';
 
 /**
  * A single row in the cost table.
@@ -14,7 +15,7 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
           <span className="text-xs text-slate-400 ml-2">Fixed</span>
         </td>
         <td className="px-4 sm:px-6 py-3 text-right">
-          {readOnlyAmount ? (
+          {/* {readOnlyAmount ? (
              <span className="font-mono text-sm text-slate-800">{hidePrices ? '***' : (row.amount || 0).toFixed(2)}</span>
           ) : (
             <Input
@@ -24,7 +25,7 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
               value={row.amount || ''}
               onChange={e => onAmountChange(row.field, e.target.value)}
             />
-          )}
+          )} */}
         </td>
         <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
         <td className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</td>
@@ -41,17 +42,25 @@ export default function CostRow({ row, type = 'hourly', onAmountChange, onHoursC
         <span className="font-medium text-slate-900 text-sm">{row.label}</span>
       </td>
       <td className="px-4 sm:px-6 py-3 text-right">
-        {readOnlyAmount ? (
-           <span className="font-mono text-sm text-slate-800">{hidePrices ? '***' : (row.amount || 0).toFixed(2)}</span>
-        ) : (
-          <Input
+        {row.key === 'labor' ? (<>
+          <Select
             type="number"
             min="0"
             className="w-24 ml-auto text-right"
             value={row.amount || ''}
             onChange={e => onAmountChange(row.costField, e.target.value)}
-          />
+          >
+            <option value="">Select</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            
+          </Select>
+        </>):(
+          <span className="px-4 sm:px-6 py-3 text-right text-slate-400 text-sm">—</span>
         )}
+      
       </td>
       <td className="px-4 sm:px-6 py-3 text-right font-mono text-sm text-slate-600">
         {hidePrices ? '***' : row.hourly.toFixed(2)}

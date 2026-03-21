@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Select } from "@/components/ui/Select";
 import CostTable from "@/components/cost/CostTable";
 import CostSummary from "@/components/cost/CostSummary";
 
@@ -46,7 +47,7 @@ export default function NewQuotation() {
           setNoActiveTemplate(true);
           return;
         }
-        
+
         const templateData = await getWorkshopCostTemplate(activeId);
         if (templateData) {
           calc.loadData(templateData);
@@ -61,7 +62,7 @@ export default function NewQuotation() {
     };
     loadActiveTemplate();
   }, []);
-  
+
   const {
     register,
     handleSubmit,
@@ -81,7 +82,7 @@ export default function NewQuotation() {
       otherCharges: 0,
       advanceReceived: 0,
       // Default to today for delivery date
-      deliveryDate: new Date().toISOString().split('T')[0] 
+      deliveryDate: new Date().toISOString().split('T')[0]
     }
   });
 
@@ -156,7 +157,7 @@ export default function NewQuotation() {
       } catch (e) {
         console.warn("Could not save customer (maybe exists):", e);
       }
-      
+
       alert("Quotation generated successfully!");
       navigate('/quotations');
 
@@ -176,10 +177,10 @@ export default function NewQuotation() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          
+
           {/* Main Form Fields */}
           <div className="md:col-span-2 space-y-6">
-            
+
             {/* Customer Details */}
             <Card>
               <CardHeader>
@@ -188,19 +189,19 @@ export default function NewQuotation() {
               <CardContent className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="customerName">Customer Name</Label>
-                  <Input 
-                    id="customerName" 
-                    placeholder="Enter customer name" 
-                    {...register("customerName")} 
+                  <Input
+                    id="customerName"
+                    placeholder="Enter customer name"
+                    {...register("customerName")}
                   />
                   {errors.customerName && <p className="text-red-500 text-sm">{errors.customerName.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input 
-                    id="phone" 
-                    placeholder="e.g. 9876543210" 
-                    {...register("phone")} 
+                  <Input
+                    id="phone"
+                    placeholder="e.g. 9876543210"
+                    {...register("phone")}
                   />
                   {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
                 </div>
@@ -208,31 +209,7 @@ export default function NewQuotation() {
             </Card>
 
             {/* Material Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Material Details</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="materialType">Material Type (e.g., SS, MS)</Label>
-                  <Input 
-                    id="materialType" 
-                    placeholder="SS 304" 
-                    {...register("materialType")} 
-                  />
-                  {errors.materialType && <p className="text-red-500 text-sm">{errors.materialType.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="thickness">Thickness</Label>
-                  <Input 
-                    id="thickness" 
-                    placeholder="e.g., 2mm" 
-                    {...register("thickness")} 
-                  />
-                  {errors.thickness && <p className="text-red-500 text-sm">{errors.thickness.message}</p>}
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Pricing Mode Toggle */}
             <Card className="border-primary/30">
@@ -247,22 +224,20 @@ export default function NewQuotation() {
                   <button
                     type="button"
                     onClick={() => setPricingMode('manual')}
-                    className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg border transition-all ${
-                      pricingMode === 'manual'
+                    className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg border transition-all ${pricingMode === 'manual'
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     Manual Pricing
                   </button>
                   <button
                     type="button"
                     onClick={() => setPricingMode('workshop')}
-                    className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg border transition-all ${
-                      pricingMode === 'workshop'
+                    className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-lg border transition-all ${pricingMode === 'workshop'
                         ? 'bg-primary text-white border-primary shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     Workshop Cost
                   </button>
@@ -270,7 +245,7 @@ export default function NewQuotation() {
 
                 {pricingMode === 'workshop' && (
                   <div className="space-y-4 pt-4">
-                    
+
                     {noActiveTemplate ? (
                       <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 text-amber-800 text-sm">
                         <AlertCircle className="h-4 w-4 inline mr-2 text-amber-500" />
@@ -278,9 +253,48 @@ export default function NewQuotation() {
                       </div>
                     ) : (
                       <>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg">Material Details</CardTitle>
+                          </CardHeader>
+                          <CardContent className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label htmlFor="materialType">Material Type:</Label>
+                              <Select
+                                id="materialType"
+                                placeholder="SS 304"
+                                {...register("materialType")}
+                                className=""
+                              >
+                                <option value="">Select Material Type</option>
+                                <option value="SS">SS </option>
+                                <option value="MS">MS</option>
+
+                              </Select>
+                              {errors.materialType && <p className="text-red-500 text-sm">{errors.materialType.message}</p>}
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="thickness">Thickness</Label>
+                              <Select
+                                id="thickness"
+                                placeholder="e.g., 2mm"
+                                {...register("thickness")}
+                              >
+                              <option value="">Select Thickness</option>
+                              <option value="0.8">0.8 mm</option>
+                              <option value="1.0">1.0 mm</option>
+                              <option value="1.2">1.2 mm</option>
+                              <option value="1.5">1.5 mm</option>
+                              <option value="2.0">2.0 mm</option>
+
+                              </Select>
+                              {errors.thickness && <p className="text-red-500 text-sm">{errors.thickness.message}</p>}
+                            </div>
+                          </CardContent>
+                        </Card>
                         <div className="bg-slate-50 border rounded-lg p-3 flex justify-between items-center mb-4">
-                           <span className="text-sm font-medium text-slate-700">Active Template:</span>
-                           <span className="text-sm font-bold text-primary px-2 py-1 bg-blue-100 rounded-md">{activeTemplateName}</span>
+                          <span className="text-sm font-medium text-slate-700">Active Template:</span>
+                          <span className="text-sm font-bold text-primary px-2 py-1 bg-blue-100 rounded-md">{activeTemplateName}</span>
                         </div>
 
                         {isNormalUser && (
@@ -289,18 +303,18 @@ export default function NewQuotation() {
                           </p>
                         )}
 
-                        <CostTable 
-                          hourlyRows={calc.hourlyRows} 
-                          fixedRows={calc.fixedRows} 
-                          onCostChange={calc.updateCost} 
-                          onHoursChange={calc.updateHours} 
-                          onFixedChange={calc.updateFixed} 
+                        <CostTable
+                          hourlyRows={calc.hourlyRows}
+                          fixedRows={calc.fixedRows}
+                          onCostChange={calc.updateCost}
+                          onHoursChange={calc.updateHours}
+                          onFixedChange={calc.updateFixed}
                           workshopTotal={calc.workshopTotal}
                           readOnlyAmount={isNormalUser}
                           hidePrices={isNormalUser}
                         />
 
-                        <CostSummary 
+                        <CostSummary
                           workshopTotal={calc.workshopTotal}
                           margin={calc.margin}
                           finalPrice={calc.finalPrice}
@@ -310,89 +324,122 @@ export default function NewQuotation() {
                           hidePrices={isNormalUser}
                         />
                       </>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-          </CardContent>
+              </CardContent>
             </Card>
 
             {/* Work Details */}
+
             {pricingMode === 'manual' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Cutting & Bending Work</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                
-                {/* Cutting */}
-                <div>
-                  <h4 className="font-medium text-sm mb-3">Cutting</h4>
-                  <div className="grid gap-4 md:grid-cols-3 items-end">
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Material Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="numberOfCuts">Number of Cuts</Label>
-                      <Input 
-                        id="numberOfCuts" 
-                        type="number" 
-                        min="0"
-                        {...register("numberOfCuts")} 
-                      />
-                      {errors.numberOfCuts && <p className="text-red-500 text-sm">{errors.numberOfCuts.message}</p>}
+                      <Label htmlFor="materialType">Material Type (e.g., SS, MS)</Label>
+                      <select
+                        id="materialType"
+                        placeholder="SS 304"
+                        {...register("materialType")}
+                      >
+                        <option value="">Select Material Type</option>
+                        <option value="SS">SS </option>
+                        <option value="MS">MS</option>
+
+                      </select>
+                      {errors.materialType && <p className="text-red-500 text-sm">{errors.materialType.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="ratePerCut">Rate per Cut (OMR)</Label>
-                      <Input 
-                        id="ratePerCut" 
-                        type="number" 
-                        min="0"
-                        {...register("ratePerCut")} 
+                      <Label htmlFor="thickness">Thickness</Label>
+                      <Input
+                        id="thickness"
+                        placeholder="e.g., 2mm"
+                        {...register("thickness")}
                       />
-                      {errors.ratePerCut && <p className="text-red-500 text-sm">{errors.ratePerCut.message}</p>}
+                      {errors.thickness && <p className="text-red-500 text-sm">{errors.thickness.message}</p>}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Total Cutting</Label>
-                      <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">
-                        OMR {totalCutting.toFixed(2)}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Cutting & Bending Work</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+
+                    {/* Cutting */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-3">Cutting</h4>
+                      <div className="grid gap-4 md:grid-cols-3 items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor="numberOfCuts">Number of Cuts</Label>
+                          <Input
+                            id="numberOfCuts"
+                            type="number"
+                            min="0"
+                            {...register("numberOfCuts")}
+                          />
+                          {errors.numberOfCuts && <p className="text-red-500 text-sm">{errors.numberOfCuts.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ratePerCut">Rate per Cut (OMR)</Label>
+                          <Input
+                            id="ratePerCut"
+                            type="number"
+                            min="0"
+                            {...register("ratePerCut")}
+                          />
+                          {errors.ratePerCut && <p className="text-red-500 text-sm">{errors.ratePerCut.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Total Cutting</Label>
+                          <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">
+                            OMR {totalCutting.toFixed(2)}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <hr className="border-slate-200" />
+                    <hr className="border-slate-200" />
 
-                {/* Bending */}
-                <div>
-                  <h4 className="font-medium text-sm mb-3">Bending</h4>
-                  <div className="grid gap-4 md:grid-cols-3 items-end">
-                    <div className="space-y-2">
-                      <Label htmlFor="numberOfBends">Number of Bends</Label>
-                      <Input 
-                        id="numberOfBends" 
-                        type="number" 
-                        min="0"
-                        {...register("numberOfBends")} 
-                      />
-                      {errors.numberOfBends && <p className="text-red-500 text-sm">{errors.numberOfBends.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ratePerBend">Rate per Bend (OMR)</Label>
-                      <Input 
-                        id="ratePerBend" 
-                        type="number" 
-                        min="0"
-                        {...register("ratePerBend")} 
-                      />
-                      {errors.ratePerBend && <p className="text-red-500 text-sm">{errors.ratePerBend.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Total Bending</Label>
-                      <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">
-                        OMR {totalBending.toFixed(2)}
+                    {/* Bending */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-3">Bending</h4>
+                      <div className="grid gap-4 md:grid-cols-3 items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor="numberOfBends">Number of Bends</Label>
+                          <Input
+                            id="numberOfBends"
+                            type="number"
+                            min="0"
+                            {...register("numberOfBends")}
+                          />
+                          {errors.numberOfBends && <p className="text-red-500 text-sm">{errors.numberOfBends.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ratePerBend">Rate per Bend (OMR)</Label>
+                          <Input
+                            id="ratePerBend"
+                            type="number"
+                            min="0"
+                            {...register("ratePerBend")}
+                          />
+                          {errors.ratePerBend && <p className="text-red-500 text-sm">{errors.ratePerBend.message}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Total Bending</Label>
+                          <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 text-slate-700 font-medium">
+                            OMR {totalBending.toFixed(2)}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </>
             )}
 
             {/* Extra Details */}
@@ -401,22 +448,22 @@ export default function NewQuotation() {
                 <CardTitle className="text-lg">Additional Details</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2">
-                 <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="otherCharges">Other Charges (OMR)</Label>
-                  <Input 
-                    id="otherCharges" 
-                    type="number" 
+                  <Input
+                    id="otherCharges"
+                    type="number"
                     min="0"
-                    {...register("otherCharges")} 
+                    {...register("otherCharges")}
                   />
                   {errors.otherCharges && <p className="text-red-500 text-sm">{errors.otherCharges.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="deliveryDate">Target Delivery Date</Label>
-                  <Input 
-                    id="deliveryDate" 
+                  <Input
+                    id="deliveryDate"
                     type="date"
-                    {...register("deliveryDate")} 
+                    {...register("deliveryDate")}
                   />
                   {errors.deliveryDate && <p className="text-red-500 text-sm">{errors.deliveryDate.message}</p>}
                 </div>
@@ -433,14 +480,14 @@ export default function NewQuotation() {
                   <CardTitle className="text-lg">Quotation Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
-                  
+
                   {pricingMode === 'manual' ? (
                     <>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Total Cutting:</span>
                         <span className="font-medium">OMR {totalCutting.toFixed(2)}</span>
                       </div>
-                      
+
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Total Bending:</span>
                         <span className="font-medium">OMR {totalBending.toFixed(2)}</span>
@@ -458,7 +505,7 @@ export default function NewQuotation() {
                       </div>
                     </>
                   )}
-                  
+
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Other Charges:</span>
                     <span className="font-medium">OMR {Number(otherCharges).toFixed(2)}</span>
@@ -473,12 +520,12 @@ export default function NewQuotation() {
 
                   <div className="space-y-2 pt-4">
                     <Label htmlFor="advanceReceived">Advance Received (OMR)</Label>
-                    <Input 
-                      id="advanceReceived" 
-                      type="number" 
+                    <Input
+                      id="advanceReceived"
+                      type="number"
                       min="0"
                       className="border-green-300 focus-visible:ring-green-500"
-                      {...register("advanceReceived")} 
+                      {...register("advanceReceived")}
                     />
                     {errors.advanceReceived && <p className="text-red-500 text-sm">{errors.advanceReceived.message}</p>}
                   </div>
@@ -488,8 +535,8 @@ export default function NewQuotation() {
                     <span>OMR {balanceAmount.toFixed(2)}</span>
                   </div>
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full mt-6 flex justify-center py-2.5 px-4 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                     disabled={isSubmitting}
                   >
