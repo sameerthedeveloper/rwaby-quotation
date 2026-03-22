@@ -3,7 +3,8 @@ import { z } from "zod";
 export const quotationSchema = z.object({
   // Customer
   customerName: z.string().min(2, "Customer name must be at least 2 characters"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string()
+    .regex(/^[279]\d{7}$/, "Oman phone number must be 8 digits (starting with 2, 7, or 9)"),
   
   // Material
   materialType: z.string().min(1, "Material type is required"),

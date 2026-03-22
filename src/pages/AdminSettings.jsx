@@ -191,6 +191,32 @@ export default function AdminSettings() {
                   workshopTotal={calc.workshopTotal}
                 />
               </div>
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Configure Base Salaries (Monthly)</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-600">WELDER & FINISHER & ALL salary (Monthly)</label>
+                    <Input
+                      type="number"
+                      value={calc.costs.laborSalaryMonthly || ''}
+                      onChange={e => calc.updateCost('laborSalaryMonthly', e.target.value)}
+                      className="bg-white"
+                      placeholder="225"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-600">FABRICATOR salary (Monthly)</label>
+                    <Input
+                      type="number"
+                      value={calc.costs.fabricatorSalaryMonthly || ''}
+                      onChange={e => calc.updateCost('fabricatorSalaryMonthly', e.target.value)}
+                      className="bg-white"
+                      placeholder="275"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Configure Default Margin</h3>
                 <CostSummary

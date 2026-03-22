@@ -87,59 +87,98 @@ export const generateQuotationPDF = (quotation) => {
   
   const mType = quotation.Material?.materialType || '';
   const mThick = quotation.Material?.thickness || '';
-  let productDescription = `Fabrication Work\n\n`;
-  if (mType) productDescription += `Material: ${mType} ${mThick ? `(${mThick} thk)` : ''}\n\n`;
+  let productDescription = `Fabrication Work\n`;
+  if (mType) productDescription += `Material: ${mType} ${mThick ? `(${mThick} thk)` : ''}\n`;
   
-  // If WorkshopMode, append cost breakdown instead of just cutting/bending
+  const grandTotal = Number(quotation.Totals?.grandTotal) || 0;
+  const tableData = [];
+  let itemCounter = 1;
+
   if (quotation.WorkshopCost?.costBreakdown) {
     const breakdown = quotation.WorkshopCost.costBreakdown;
     
-    // Operations
+    // Add main fabrication item
+    tableData.push([
+      (itemCounter++).toString().padStart(2, '0'),
+      productDescription,
+      '1',
+      (Number(quotation.WorkshopCost.workshopTotal) || 0).toFixed(3),
+      (Number(quotation.WorkshopCost.workshopTotal) || 0).toFixed(3),
+      'As per DWG'
+    ]);
+
+    // Add Detailed Breakdown if in workshop mode
+    // Note: We only show the ones that aren't "hidden" OR we show them with ***
+    const overheads = ['machine', 'rent', 'electricity'];
+    
+    Object.entries(breakdown).forEach(([key, val]) => {
+      if (val && val.total > 0 && key !== 'operations') {
+        const isHidden = overheads.includes(key);
+        const label = key.toUpperCase();
+        tableData.push([
+          '',
+          `   > ${label} ${val.hours ? `(${val.hours} hrs)` : ''}`,
+          val.amount || '1',
+          isHidden ? '***' : (val.total / (val.amount || 1)).toFixed(3),
+          isHidden ? '***' : val.total.toFixed(3),
+          ''
+        ]);
+      }
+    });
+
     if (breakdown.operations) {
-      productDescription += `Operations:\n`;
       Object.entries(breakdown.operations).forEach(([key, val]) => {
-         if (val.total > 0) {
-           const label = key.charAt(0).toUpperCase() + key.slice(1);
-           productDescription += `- ${label}: ${val.hours} hrs\n`;
-         }
+        if (val.total > 0) {
+          tableData.push([
+            '',
+            `   > ${key.toUpperCase()} (${val.hours} hrs)`,
+            '1',
+            (val.total).toFixed(3),
+            (val.total).toFixed(3),
+            ''
+          ]);
+        }
       });
-      productDescription += `\n`;
     }
-
-    // Additional Costs
-    productDescription += `Include Fixed Costs & Equipment:\n`;
-    if (breakdown.machine?.total > 0) productDescription += `- Machine Cost\n`;
-    if (breakdown.rent?.total > 0) productDescription += `- Workshop Rent\n`;
-    if (breakdown.electricity?.total > 0) productDescription += `- Electricity\n`;
-    if (breakdown.labor?.total > 0) productDescription += `- Labor (${breakdown.labor.hours} hrs)\n`;
-
   } else {
     // Manual Mode
+    tableData.push([
+      (itemCounter++).toString().padStart(2, '0'),
+      productDescription,
+      '1',
+      (grandTotal - (Number(quotation.ExtraTotal) || 0)).toFixed(3),
+      (grandTotal - (Number(quotation.ExtraTotal) || 0)).toFixed(3),
+      'As per DWG'
+    ]);
+
     if (quotation.Cutting?.numberOfCuts > 0) {
-      productDescription += `Cutting operations: ${quotation.Cutting?.numberOfCuts} cuts at ${quotation.Cutting?.ratePerCut} OMR\n`;
+      tableData.push(['', `   > CUTTING (${quotation.Cutting.numberOfCuts} cuts)`, '1', (Number(quotation.Cutting.ratePerCut) || 0).toFixed(3), (Number(quotation.Cutting.totalCutting) || 0).toFixed(3), '']);
     }
     if (quotation.Bending?.numberOfBends > 0) {
-      productDescription += `Bending operations: ${quotation.Bending?.numberOfBends} bends at ${quotation.Bending?.ratePerBend} OMR\n`;
+      tableData.push(['', `   > BENDING (${quotation.Bending.numberOfBends} bends)`, '1', (Number(quotation.Bending.ratePerBend) || 0).toFixed(3), (Number(quotation.Bending.totalBending) || 0).toFixed(3), '']);
     }
   }
   
-  // Determine prices
-  let grandTotal = Number(quotation.Totals?.grandTotal) || 0;
-  
-  // Custom description grouping for the format
-  const tableData = [
-    ['01', productDescription.trim(), '1', grandTotal.toFixed(3), grandTotal.toFixed(3), 'As per DWG']
-  ];
-  
-  // Extra charges as separate line if applicable
-  if (Number(quotation.ExtraCharges?.otherCharges) > 0) {
-    const extra = Number(quotation.ExtraCharges.otherCharges);
-    tableData.push([
-      '02', 
-      'Extra Charges / Other Work Requirements', 
-      '1', 
-      extra.toFixed(3), 
-      extra.toFixed(3), 
+  // Extra Costs
+  if (quotation.ExtraCosts && quotation.ExtraCosts.length > 0) {
+    quotation.ExtraCosts.forEach(cost => {
+      tableData.push([
+        (itemCounter++).toString().padStart(2, '0'),
+        cost.description || 'Other Cost',
+        '1',
+        (Number(cost.amount) || 0).toFixed(3),
+        (Number(cost.amount) || 0).toFixed(3),
+        ''
+      ]);
+    });
+  } else if (Number(quotation.ExtraTotal) > 0) {
+     // Fallback for migrated data
+     tableData.push([
+      (itemCounter++).toString().padStart(2, '0'),
+      'Other Charges',
+      '1',
+      (Number(quotation.ExtraTotal)).toFixed(3),
+      (Number(quotation.ExtraTotal)).toFixed(3),
       ''
     ]);
   }
@@ -175,7 +214,7 @@ export const generateQuotationPDF = (quotation) => {
     ],
     columnStyles: {
       0: { cellWidth: 15 },
-      1: { cellWidth: 80 },
+      1: { cellWidth: 'auto' },
       2: { cellWidth: 10 },
       3: { cellWidth: 20 },
       4: { cellWidth: 25 },

@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  const isAdmin = currentUser?.email === 'admin@admin.com' || currentUser?.email === 'admin@rwaby.com';
+  const isAdmin = currentUser?.email === 'admin@admin.com' || currentUser?.email === 'admin@rwaby.om';
 
   const value = {
     currentUser,

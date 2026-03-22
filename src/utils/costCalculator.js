@@ -16,29 +16,29 @@
 export function calculateHourlyCost({
   machineCost = 0,
   rent = 0,
-  laborCostPerDay = 51.92,
+  laborMonthlySalary = 225,
+  fabricatorMonthlySalary = 275,
   electricityCost = 0,
 }) {
   return {
     machineHourly:     machineCost      / 365 / 8,
     rentHourly:        rent             / 26  / 8,
-    laborHourly:       laborCostPerDay  / 8,
+    laborHourly:       laborMonthlySalary / 26  / 8,
+    fabricatorHourly:  fabricatorMonthlySalary / 26  / 8,
     electricityHourly: electricityCost  / 26  / 8,
   };
 }
 
 // ─── Item Total Calculation ─────────────────────────────────────────
-/**
- * Multiplies each hourly rate by the hours used.
- * @param {Object} hourlyRates - Output of calculateHourlyCost
- * @param {Object} hours       - Hours used per item
- * @returns {Object} total cost per item
- */
-export function calculateItemTotals(hourlyRates, hours) {
+export function calculateItemTotals(hourlyRates, hours, costs = {}) {
+  const laborCount = Number(costs.laborCount) || 1;
+  const fabricatorCount = Number(costs.fabricatorCount) || 1;
+
   return {
     machineTotal:     hourlyRates.machineHourly     * (hours.machineHours     || 0),
     rentTotal:        hourlyRates.rentHourly        * (hours.rentHours        || 0),
-    laborTotal:       hourlyRates.laborHourly       * (hours.laborHours       || 0),
+    laborTotal:       hourlyRates.laborHourly       * (hours.laborHours       || 0) * laborCount,
+    fabricatorTotal:  hourlyRates.fabricatorHourly  * (hours.fabricatorHours  || 0) * fabricatorCount,
     electricityTotal: hourlyRates.electricityHourly * (hours.electricityHours || 0),
   };
 }
@@ -50,7 +50,7 @@ export function calculateItemTotals(hourlyRates, hours) {
  * @param {Object} fixedCosts   - Direct-cost operations
  * @returns {{ workshopTotal: number, itemTotals: Object }}
  */
-export function calculateWorkshopCost(itemTotals, fixedCosts = {}) {
+export function calculateWorkshopCost(itemTotals, fixedCosts = {}, extraCosts = []) {
   const {
     laserCutting  = 0,
     powderCoating = 0,
@@ -59,21 +59,27 @@ export function calculateWorkshopCost(itemTotals, fixedCosts = {}) {
     accessories   = 0,
   } = fixedCosts;
 
+  const extraTotal = extraCosts.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
   const workshopTotal =
     itemTotals.machineTotal +
     itemTotals.rentTotal +
     itemTotals.laborTotal +
+    (itemTotals.fabricatorTotal || 0) +
     itemTotals.electricityTotal +
     laserCutting +
     powderCoating +
     wrapping +
     bending +
-    accessories;
+    accessories +
+    extraTotal;
 
   return {
     workshopTotal,
     itemTotals,
     fixedCosts: { laserCutting, powderCoating, wrapping, bending, accessories },
+    extraCosts,
+    extraTotal
   };
 }
 

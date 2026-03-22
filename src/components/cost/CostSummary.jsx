@@ -19,18 +19,12 @@ export default function CostSummary({ workshopTotal, margin, finalPrice, profit,
 
         <div className="space-y-2">
           <Label>Margin (%)</Label>
-          {readOnly ? (
-            <div className="h-9 px-3 py-1 flex items-center border rounded-md bg-slate-50 border-slate-200 text-slate-500 font-mono text-sm max-w-[100px]">
-              {(margin || 0)}
-            </div>
-          ) : (
-            <Input
-              type="number"
-              className="w-24 font-mono"
-              value={margin || ''}
-              onChange={e => onMarginChange(e.target.value)}
-            />
-          )}
+          <Input
+            type="number"
+            className="w-24 font-mono"
+            value={margin || ''}
+            onChange={e => onMarginChange(e.target.value)}
+          />
         </div>
 
         <hr className="border-slate-200" />

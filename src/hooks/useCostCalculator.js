@@ -9,15 +9,18 @@ import {
 const INITIAL_COSTS = {
   machineCost: 0,
   rent: 0,
-  laborCostPerDay: 51.92,
-  fabricatorCostPerHour: 1.3221,
+  laborSalaryMonthly: 225,
+  fabricatorSalaryMonthly: 275,
   electricityCost: 0,
+  laborCount: 1,
+  fabricatorCount: 1,
 };
 
 const INITIAL_HOURS = {
   machineHours: 0,
   rentHours: 0,
   laborHours: 0,
+  fabricatorHours: 0,
   electricityHours: 0,
 };
 
@@ -37,6 +40,7 @@ export function useCostCalculator(initial = {}) {
   const [costs, setCosts] = useState({ ...INITIAL_COSTS, ...initial.costs });
   const [hours, setHours] = useState({ ...INITIAL_HOURS, ...initial.hours });
   const [fixedCosts, setFixedCosts] = useState({ ...INITIAL_FIXED, ...initial.fixedCosts });
+  const [extraCosts, setExtraCosts] = useState(initial.extraCosts || []);
   const [margin, setMargin] = useState(initial.margin || 0);
 
   const updateCost = (key, value) =>
@@ -48,17 +52,37 @@ export function useCostCalculator(initial = {}) {
   const updateFixed = (key, value) =>
     setFixedCosts(prev => ({ ...prev, [key]: Number(value) || 0 }));
 
+  const addExtraCost = () => {
+    setExtraCosts(prev => [...prev, { id: Date.now(), description: '', amount: 0 }]);
+  };
+
+  const removeExtraCost = (id) => {
+    setExtraCosts(prev => prev.filter(item => item.id !== id));
+  };
+
+  const updateExtraCost = (id, field, value) => {
+    setExtraCosts(prev => prev.map(item =>
+      item.id === id ? { ...item, [field]: field === 'amount' ? (Number(value) || 0) : value } : item
+    ));
+  };
+
   // ─── Derived calculations (memoized) ──────────────────────────
-  const hourlyRates = useMemo(() => calculateHourlyCost(costs), [costs]);
+  const hourlyRates = useMemo(() => calculateHourlyCost({
+    machineCost: costs.machineCost,
+    rent: costs.rent,
+    laborMonthlySalary: costs.laborSalaryMonthly,
+    fabricatorMonthlySalary: costs.fabricatorSalaryMonthly,
+    electricityCost: costs.electricityCost
+  }), [costs]);
 
   const itemTotals = useMemo(
-    () => calculateItemTotals(hourlyRates, hours),
-    [hourlyRates, hours]
+    () => calculateItemTotals(hourlyRates, hours, costs),
+    [hourlyRates, hours, costs]
   );
 
   const workshopResult = useMemo(
-    () => calculateWorkshopCost(itemTotals, fixedCosts),
-    [itemTotals, fixedCosts]
+    () => calculateWorkshopCost(itemTotals, fixedCosts, extraCosts),
+    [itemTotals, fixedCosts, extraCosts]
   );
 
   const priceResult = useMemo(
@@ -70,8 +94,8 @@ export function useCostCalculator(initial = {}) {
   const hourlyRows = useMemo(() => [
     { key: 'machine',     label: 'Machine (Per Hour)',          amount: costs.machineCost,       hourly: hourlyRates.machineHourly,     hoursUsed: hours.machineHours,     total: itemTotals.machineTotal,     costField: 'machineCost',    hoursField: 'machineHours' },
     { key: 'rent',        label: 'Workshop Rent (Per Hour)',    amount: costs.rent,              hourly: hourlyRates.rentHourly,        hoursUsed: hours.rentHours,        total: itemTotals.rentTotal,        costField: 'rent',           hoursField: 'rentHours' },
-    { key: 'fabricator',       label: 'Fabricator Cost (Per Hour)',       amount: costs.laborCostPerDay,   hourly: hourlyRates.laborHourly,       hoursUsed: hours.laborHours,       total: itemTotals.laborTotal,       costField: 'laborCostPerDay',hoursField: 'laborHours' },
-    { key: 'labor',       label: 'Labor Cost (Per Head)',       amount: costs.fabricatorCostPerDay,   hourly: costs.fabricatorCostPerDay/8,       hoursUsed: hours.fabricatorHours,       total: itemTotals.fabricatorTotal,       costField: 'fabricatorCostPerDay',hoursField: 'fabricatorHours' },
+    { key: 'fabricator',  label: 'FABRICATOR',                    amount: costs.fabricatorCount,   hourly: hourlyRates.fabricatorHourly,  hoursUsed: hours.fabricatorHours,  total: itemTotals.fabricatorTotal,  costField: 'fabricatorCount',hoursField: 'fabricatorHours' },
+    { key: 'labor',       label: 'WELDER & FINISHER & ALL',       amount: costs.laborCount,        hourly: hourlyRates.laborHourly,       hoursUsed: hours.laborHours,       total: itemTotals.laborTotal,       costField: 'laborCount',     hoursField: 'laborHours' },
     { key: 'electricity', label: 'Electricity (EB) (Per Hour)', amount: costs.electricityCost,   hourly: hourlyRates.electricityHourly, hoursUsed: hours.electricityHours, total: itemTotals.electricityTotal, costField: 'electricityCost',hoursField: 'electricityHours' },
   ], [costs, hourlyRates, hours, itemTotals]);
 
@@ -88,6 +112,7 @@ export function useCostCalculator(initial = {}) {
     if (data.costs)      setCosts({ ...INITIAL_COSTS, ...data.costs });
     if (data.hours)      setHours({ ...INITIAL_HOURS, ...data.hours });
     if (data.fixedCosts) setFixedCosts({ ...INITIAL_FIXED, ...data.fixedCosts });
+    if (data.extraCosts) setExtraCosts(data.extraCosts || []);
     if (data.margin !== undefined) setMargin(data.margin);
   };
 
@@ -96,6 +121,7 @@ export function useCostCalculator(initial = {}) {
     costs,
     hours,
     fixedCosts,
+    extraCosts,
     margin,
     hourlyRates,
     itemTotals,
@@ -106,9 +132,10 @@ export function useCostCalculator(initial = {}) {
 
   return {
     // State
-    costs, hours, fixedCosts, margin,
+    costs, hours, fixedCosts, extraCosts, margin,
     // Updaters
     updateCost, updateHours, updateFixed, setMargin,
+    addExtraCost, removeExtraCost, updateExtraCost,
     // Computed
     hourlyRates, itemTotals, workshopResult, priceResult,
     workshopTotal: workshopResult.workshopTotal,

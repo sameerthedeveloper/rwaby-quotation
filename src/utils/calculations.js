@@ -15,11 +15,11 @@ export const calculateBendingTotal = (numberOfBends, ratePerBend) => {
   return bends * rate;
 };
 
-export const calculateGrandTotal = (totalCutting, totalBending, otherCharges) => {
+export const calculateGrandTotal = (totalCutting, totalBending, extraCostsTotal) => {
   const cutting = Number(totalCutting) || 0;
   const bending = Number(totalBending) || 0;
-  const other = Number(otherCharges) || 0;
-  return cutting + bending + other;
+  const extra = Number(extraCostsTotal) || 0;
+  return cutting + bending + extra;
 };
 
 export const calculateBalanceAmount = (grandTotal, advanceReceived) => {

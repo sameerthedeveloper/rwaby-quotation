@@ -14,12 +14,12 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
           <CardContent className="p-0">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-                  <th className="px-6 py-4 font-medium">Item</th>
-                   <th className="px-6 py-4 font-medium text-right">Labour Count</th>
-                  <th className="px-6 py-4 font-medium text-right">1 Hour Cost</th>
-                  <th className="px-6 py-4 font-medium text-right">Hours Used</th>
-                  <th className="px-6 py-4 font-medium text-right">Total Cost (OMR)</th>
+                <tr className="bg-slate-100/80 border-b-2 border-slate-200 text-slate-600 text-[10px] uppercase tracking-widest font-bold">
+                  <th className="px-6 py-4 w-1/3 text-left">Item Description</th>
+                  <th className="px-6 py-4 w-1/6 text-right">Qty/Count</th>
+                  <th className="px-6 py-4 w-1/6 text-right">Rate</th>
+                  <th className="px-6 py-4 w-1/6 text-right">Hours</th>
+                  <th className="px-6 py-4 w-1/6 text-right">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -37,8 +37,8 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
                 ))}
                 {/* Separator */}
                 <tr>
-                  <td colSpan={5} className="px-6 py-2 bg-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Fixed Operations
+                  <td colSpan={5} className="px-6 py-2.5 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                    Additional Operations
                   </td>
                 </tr>
                 {/* Fixed items */}
@@ -54,10 +54,10 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-slate-50 border-t-2 border-slate-300">
-                  <td colSpan={4} className="px-6 py-4 font-bold text-slate-900">Workshop Total</td>
-                  <td className="px-6 py-4 text-right font-bold font-mono text-primary text-lg">
-                    {workshopTotal.toFixed(2)}
+                <tr className="bg-slate-200/50 border-t-2 border-slate-300">
+                  <td colSpan={4} className="px-6 py-5 font-bold text-slate-700 text-right">Workshop Production Cost:</td>
+                  <td className="px-6 py-5 text-right font-bold font-mono text-primary text-xl">
+                    {`${(workshopTotal || 0).toFixed(2)} OMR`}
                   </td>
                 </tr>
               </tfoot>
@@ -109,7 +109,7 @@ export default function CostTable({ hourlyRows, fixedRows, onCostChange, onHours
         {/* Total */}
         <div className="bg-slate-100 rounded-lg p-4 flex justify-between items-center">
           <span className="font-bold text-slate-900">Workshop Total</span>
-          <span className="font-bold font-mono text-primary text-lg">{`${workshopTotal.toFixed(2)} OMR`}</span>
+          <span className="font-bold font-mono text-primary text-lg">{`${(workshopTotal || 0).toFixed(2)} OMR`}</span>
         </div>
       </div>
     </>
@@ -141,22 +141,18 @@ function MobileRow({ label, amount, hourly, hoursUsed, total, onAmountChange, on
         </div>
       </div>
       <div className="flex justify-between text-xs mt-2">
-        <span className="text-slate-500">Hourly: <strong className="text-slate-700">{hidePrices ? '***' : hourly.toFixed(2)}</strong></span>
-        <span className="text-slate-500">Total: <strong className="text-primary">{`${total.toFixed(2)} OMR`}</strong></span>
+        <span className="text-slate-500">Hourly: <strong className="text-slate-700">{hidePrices ? '***' : (hourly || 0).toFixed(2)}</strong></span>
+        <span className="text-slate-500">Total: <strong className="text-primary">{`${(total || 0).toFixed(2)} OMR`}</strong></span>
       </div>
     </div>
   );
 }
 
-function MobileFixedRow({ label, amount, onAmountChange, readOnlyAmount, hidePrices }) {
+function MobileFixedRow({ label, amount, onAmountChange, hidePrices }) {
   return (
     <div className="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
       <span className="text-sm font-medium text-slate-700 flex-1">{label}</span>
-      {readOnlyAmount ? (
-        <span className="font-mono text-sm text-slate-800">{hidePrices ? '***' : (amount || 0).toFixed(2)}</span>
-      ) : (
-        <Input type="number" min="0" className="w-28" value={amount || ''} onChange={e => onAmountChange(e.target.value)} />
-      )}
+      <Input type="number" min="0" className="w-28" value={amount || ''} onChange={e => onAmountChange(e.target.value)} />
     </div>
   );
 }
